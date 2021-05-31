@@ -21,15 +21,16 @@ namespace Ora
 
         static void Main(string[] args)
         {
+            Console.Title = "Ora - v2.0";
             Console.OutputEncoding = Encoding.ASCII;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Console.WriteLine("Drag n Drop the Exe: ");
+            Colorful.Console.Write("Enter path file (drag and drop): ", Color.Green);         
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             string path = Console.ReadLine().Replace("\"", "");
-
+            Console.ForegroundColor = ConsoleColor.White;
             fileDir = System.IO.Path.GetDirectoryName(path).Replace("\"", "");
-
             agilePath = fileDir + "\\AgileDotNet.VMRuntime.dll";
             
             string obf = "";
@@ -48,6 +49,13 @@ namespace Ora
                     obf = "Agile.NET";
                 dbg($"Resolved  '{data.ToString()}'");
             }
+            foreach (var data in module.GetModuleRefs())
+            {
+                dbg($"Resolved  '{data.ToString()}'");
+            }
+
+
+
             success("Resolved all dependencies");
 
             Colorful.Console.Write("\n[DEBUG]    ", Color.LightSkyBlue);
@@ -63,22 +71,38 @@ namespace Ora
                     info("Detected Agile.NET as Obfuscator");
                     obf = "AgileVM";
                 }
-                else if ((module.Assembly.Modules[0].CustomAttributes[0].AttributeType.ToString().Contains("ConfusedBy") || module.Assembly.Modules[0].CustomAttributes[1].AttributeType.ToString().Contains("ConfusedBy")) || module.FullName.Contains("вє∂ѕ ρяσтє¢тσя"))
+                else if ((module.Assembly.Modules[0].CustomAttributes.Count > 0 && (module.Assembly.Modules[0].CustomAttributes[0].AttributeType.ToString().Contains("ConfusedBy") || module.Assembly.Modules[0].CustomAttributes[1].AttributeType.ToString().Contains("ConfusedBy"))) || module.FullName.Contains("вє∂ѕ ρяσтє¢тσя"))
                 {
                     info("Detected ConfuserEx as Obfuscator");
                     KoiData.engine(module, path);
                 }
                 else
                 {
-                    info("Detected EazFuscator as Obfuscator");
-                    process("eaz", path);
+                    int flags = 0;
+                    foreach (var res in module.Resources)
+                    {
+                        
+                        if (string.IsNullOrWhiteSpace(res.Name)) flags++;
+                        if (res.Name.Length == 32) flags++;
+                    }
+
+                    foreach (var data in module.GetModuleRefs())
+                    {
+                        if (data.ToString() == "ncrypt.dll") flags++;
+                    }
+                    if (flags >= 2)
+                    {
+                        info("Detected EazFuscator as Obfuscator");
+                        process("eaz", path);
+                    }
+                    else info("Couldnt detect any protections! Please use manual mode.");
                 }
 
             }
             else
             {
                 Colorful.Console.Write("[DEBUG]    ", Color.LightSkyBlue);
-                Colorful.Console.Write("Pick a virtualizer [1: Koi |2: Eaz |3: Agile] ");
+                Colorful.Console.Write("Pick a virtualizer [1: Koi |2: Eaz |3: Agile |4: VMP] ");
                 stopwatch.Stop();
                 int vmOption = int.Parse(Console.ReadLine());
                 stopwatch.Start();
@@ -90,9 +114,13 @@ namespace Ora
                 {
                     process("eaz", path);
                 }
-                else
+                else if(vmOption == 3)
                 {
                     process("agile", path);
+                }
+                else
+                {
+                    process("vmp", path);
                 }
             }
             
@@ -101,13 +129,17 @@ namespace Ora
             Console.ReadKey();
 
         }
-        
+
         public static void process(string Type, string path, byte[] bytes = null)
         {
             try
             {
                 dbg("Hooking Nen...");
-                File.Copy("Nen.dll", fileDir + "\\Nen.dll");
+                try
+                {
+                    File.Copy("Nen.dll", fileDir + "\\Nen.dll");
+                }
+                catch { }
                 switch (Type)
                 {
                     case "eaz":
