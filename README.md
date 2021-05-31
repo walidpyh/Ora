@@ -1,4 +1,4 @@
-# Ora (.NET VirtualizedApps Patcher)
+# Ora - .NET VirtualizedApps Patcher
 
 This is a universal Patcher that I coded for Virtualized Applications. Protected by KoiVM/EazVM/AgileVM/VMP that would allow the change/patche of executed instrusctions objects and that involves the full changes of results/parameters/methods
 
