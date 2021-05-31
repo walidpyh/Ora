@@ -119,7 +119,7 @@ namespace Ora
                         break;
 
                     case "vmp":
-
+                        Injections.vmpInj(path);
                         break;
 
                     case "agile":

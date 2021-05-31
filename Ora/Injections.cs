@@ -15,6 +15,51 @@ namespace Ora
 {
     class Injections
     {
+        public static void vmpInj(string path)
+        {
+            ModuleDefMD moduleDef = ModuleDefMD.Load(path);
+            foreach (var type in moduleDef.Types)
+            {
+                foreach (var method in type.Methods)
+                {
+                    if (method.Parameters.Count == 3 && method.Parameters[1].Type.TypeName == "MethodBase" && method.Parameters[2].Type.TypeName == "Boolean")
+                    {
+                        for (int i = 0; i < method.Body.Instructions.Count; i++)
+                        {
+                            if (method.Body.Instructions[i].Operand?.ToString().Contains("Invoke") ?? false)
+                            {
+
+                                var indexInvoke = method.Body.Instructions.IndexOf(method.Body.Instructions[i]);
+                                var lastInstruction = method.Body.Instructions[indexInvoke + 2];
+
+                                if (method.Body.Instructions[indexInvoke + 1].IsStloc())
+                                {
+                                    MDToken var = method.MDToken;
+                                    method.Body.Instructions[indexInvoke].OpCode = OpCodes.Nop;
+                                    Importer importer = new Importer(moduleDef);
+                                    IMethod myMethod = importer.Import(typeof(Nen.Nen).GetMethod("Queue"));
+                                    method.Body.Instructions.Insert(indexInvoke + 1, new Instruction(OpCodes.Call, moduleDef.Import(myMethod)));
+                                    Program.success("Hooked Succesfully!");
+                                }
+
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            var nativeModuleWriter = new dnlib.DotNet.Writer.NativeModuleWriterOptions(moduleDef, false);
+            nativeModuleWriter.Logger = DummyLogger.NoThrowInstance;
+            nativeModuleWriter.MetadataOptions.Flags = MetadataFlags.PreserveAll |
+                                                       MetadataFlags.KeepOldMaxStack |
+                                                       MetadataFlags.PreserveExtraSignatureData |
+                                                       MetadataFlags.PreserveBlobOffsets |
+                                                       MetadataFlags.PreserveUSOffsets |
+                                                       MetadataFlags.PreserveStringsOffsets;
+            nativeModuleWriter.Cor20HeaderOptions.Flags = ComImageFlags.ILOnly;
+            moduleDef.NativeWrite(path + "_Hooked_.exe", nativeModuleWriter);
+        }
         public static void agileInj(string path)
         {
             ModuleDefMD md = ModuleDefMD.Load(path);
@@ -37,7 +82,7 @@ namespace Ora
                                     IMethod myMethod = importer.Import(typeof(Nen.Nen).GetMethod("Queue"));
                                     method.Body.Instructions.Insert(i + 1, new Instruction(OpCodes.Call, md.Import(myMethod)));
                                     i += 1;
-
+                                    Program.success("Hooked Succesfully!");
                                 }
                             }
                         }
@@ -78,7 +123,7 @@ namespace Ora
                                     IMethod myMethod = importer.Import(typeof(Nen.Nen).GetMethod("Queue"));
                                     method.Body.Instructions.Insert(i + 1, new Instruction(OpCodes.Call, md.Import(myMethod)));
                                     i += 1;
-                                    Program.success("Forlaxer Hooked Succesfully!");
+                                    Program.success("Hooked Succesfully!");
                                 }
                             }
                         }
