@@ -69,7 +69,7 @@ namespace Ora
                 if (obf == "Agile.NET")
                 {
                     info("Detected Agile.NET as Obfuscator");
-                    obf = "AgileVM";
+                    process("agile", path);
                 }
                 else if ((module.Assembly.Modules[0].CustomAttributes.Count > 0 && (module.Assembly.Modules[0].CustomAttributes[0].AttributeType.ToString().Contains("ConfusedBy") || module.Assembly.Modules[0].CustomAttributes[1].AttributeType.ToString().Contains("ConfusedBy"))) || module.FullName.Contains("вє∂ѕ ρяσтє¢тσя"))
                 {
@@ -95,7 +95,26 @@ namespace Ora
                         info("Detected EazFuscator as Obfuscator");
                         process("eaz", path);
                     }
-                    else info("Couldnt detect any protections! Please use manual mode.");
+                    else 
+                    {
+                        flags = 0;
+
+                        foreach (var data in module.Metadata.PEImage.ImageSectionHeaders)
+                        {
+                            if (data.DisplayName.Contains(".vmp") || data.DisplayName.Contains("0")) flags++;
+                        }
+                        foreach (var data in module.GetModuleRefs())
+                        {
+                            if (data.ToString() == "ntdll") flags++;
+                        }
+
+                        if (flags >= 3)
+                        {
+                            info("Detected VMProtect as Obfuscator");
+                            process("vmp", path);
+                        }
+                        else info("Couldnt detect any protections! Please use manual mode."); 
+                    }
                 }
 
             }
