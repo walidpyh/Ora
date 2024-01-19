@@ -13,9 +13,3 @@ The devirtualiser is powered by the following projects:
 - [Colorful.Console](https://github.com/tomakita/Colorful.Console): Console Styling library [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 - [Newtonsoft.JSON](https://github.com/JamesNK/Newtonsoft.Json): JSON file parser.  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
-## Credits
-This project wouldnt be possible without the help of these 2 awesome guys last year with it's v1.0:
-
-Tobito Github: https://github.com/TobitoFatitoRE
-xsilent Github: https://github.com/xsilent007
